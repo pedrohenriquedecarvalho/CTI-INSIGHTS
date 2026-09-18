@@ -1,14 +1,10 @@
-<<<<<<< HEAD
 <template>
-<!-- O router-view renderiza a HomeView, LoginView ou o AppLayout dependendo da URL -->
-<router-view />
-=======
-<script setup>
-
-import home from './components/home.vue'
-</script>
-
-<template>
-    <home/>
->>>>>>> 8ee5a4dbd502c35a3e650d9e58dad9ea68af681a
+  <div class="p-8 m-4 bg-emerald-600 text-white rounded-xl shadow-lg text-center">
+    <h1 class="text-3xl font-bold">Tailwind v4 está ATIVO!</h1>
+    <p class="mt-2 text-emerald-100">Se este quadro estiver verde com texto branco, funcionou!</p>
+  </div>
 </template>
+
+<style>
+@import "tailwindcss";
+</style>
