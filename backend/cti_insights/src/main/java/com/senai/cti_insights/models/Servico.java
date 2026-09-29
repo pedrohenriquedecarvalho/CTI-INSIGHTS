@@ -1,4 +1,5 @@
-package com.cti_insights.demo.models;
+package com.senai.cti_insights.models;
+
 
 import java.util.ArrayList;
 import java.util.List;

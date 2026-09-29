@@ -1,4 +1,4 @@
-package com.cti_insights.demo.models;
+package com.senai.cti_insights.models;
 
 import java.math.BigDecimal;
 
@@ -16,23 +16,22 @@ import jakarta.persistence.Table;
 
 @Entity 
 @Table(name="cliente") // Cria tabela chamada cliente
-
 public class Cliente {
-    
+
     @Id 
-    @GeneratedValue(strategy =  GenerationType.IDENTITY)
+    @GeneratedValue (strategy = GenerationType.IDENTITY)
     @Column (name= "id_cliente")
     private  Long idCliente; // id do cliente
 
-    // Relacionamento para consultor, entao um consultor pode ter mais de um cliente    
+    // Relacionamento para consultor, entao um consultor pode ter mais de um cliente
     @ManyToOne 
     @JoinColumn (name= "id_consultor", nullable = false)
-    private  Consultor consultor;
+    private  Consultor consultor; // Atributo consultor do tipo consultor
 
     @Column(name = "nome_empresa",nullable = false,length = 180)
-    private String nomeEmpresa;
+    private  String nomeEmpresa;
 
-       @Column (name="segmento",nullable = false, length = 100)
+    @Column (name="segmento",nullable = false, length = 100)
     private String segmento;
 
 
@@ -46,14 +45,14 @@ public class Cliente {
     private BigDecimal faturamentoAnual;
 
     @Enumerated(EnumType.STRING)
-    @Column (name = "nível",nullable = false)
+    @Column (name = "nivel",nullable = false)
     private NivelCliente nivel;
-    
-    @Enumerated (EnumType.STRING)
+
+    @Enumerated(EnumType.STRING)
     @Column(name="status",nullable = false)
     private StatusCliente status;
 
-    // Cria um construtor vazio para clientes
+    // Cria um construtor vazio para cliente
 
     public Cliente(){
 
@@ -65,19 +64,17 @@ public class Cliente {
         String segmento,
         BigDecimal faturamentoAnual,
         NivelCliente nivel,
-        StatusCliente status;
-    ){
+        StatusCliente status){
         this.consultor = consultor;
         this.nomeEmpresa = nomeEmpresa;
         this.segmento = segmento;
         this.faturamentoAnual = faturamentoAnual;
         this.nivel = nivel;
         this.status = status;
-
-
     }
 
-        // Cria função para pegar o ID
+
+    // Cria função para pegar o ID
     public Long getIdCliente(){
         return idCliente;
     }
@@ -92,43 +89,60 @@ public class Cliente {
         this.consultor = consultor;
     }
 
-    // Função para pegar o nome da empresa
-    public String getNomeEmpresa(){
+// Função para pegar o nome da empresa
+public String getNomeEmpresa(){
     return nomeEmpresa;
-    }
+}
 
-    // Função para setar o nome da empresa
+// Função para setar o nome da empresa
 
-    public void setNomeEmpresa(String nomeEmpresa){
+public void setNomeEmpresa(String nomeEmpresa){
     this.nomeEmpresa = nomeEmpresa;
-    }
+}
 
-    // Função para pegar o segmento
+// Função para pegar o segmento
 
-    public String getSegmento(String segmento){
-    this.segmento
-    }
+public String getSegmento(){
+   return  segmento;
+}
 
-    // Função para pegar o faturamento
-    public BigDecimal getFaturamentoAnual(){
-        return faturamentoAnual;
-    }
+public  void setSegmento(String segmento){
+    this.segmento = segmento;
+}
 
-    public void faturamentoAnual(BigDecimal faturamentoAnual){
-        this.faturamentoAnual = faturamentoAnual;
-    }
+// Função para pegar o faturamento
 
-    public void setNivel(NivelCliente nivel){
-        this.nivel = nivel;
-    }
+public BigDecimal getFaturamentoAnual(){
+    return faturamentoAnual;
+}
 
-    public StatusCliente getStatus(){
-        return status;
-    }
 
-    public void setStatus(StatusCliente status){
-        this.status = status;
-    }
+public void setFaturamentoAnual(BigDecimal faturamentoAnual){
+    this.faturamentoAnual = faturamentoAnual;
+}
+
+
+
+public  void setNivel(NivelCliente nivel){
+    this.nivel = nivel;
+}
+
+public NivelCliente getNivel(){
+    return  nivel;
 
 }
 
+public StatusCliente getStatus(){
+    return status;
+}
+
+public void setStatus(StatusCliente status){
+    this.status = status;
+}
+
+
+
+
+
+    
+}

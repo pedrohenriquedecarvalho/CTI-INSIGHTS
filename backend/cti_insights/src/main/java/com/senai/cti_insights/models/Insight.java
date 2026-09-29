@@ -1,4 +1,5 @@
-package com.cti_insights.demo.models;
+package com.senai.cti_insights.models;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,34 +17,34 @@ import jakarta.persistence.Table;
 
 @Entity 
 @Table (name = "Insight")
-public class Insihts {
+public class Insight {
     @Id 
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     @Column (name = "id_insight")
     private Long idinsight;
 
-    @Column (name = "tipo",nullable = false, length = 150)
+    @Column (name = "tipo",nullable = true, length = 150)
     private String tipo;
 
-    @column (name = "descriacao", length = 300)
-    private String descriacao;
+    @Column (name = "descricao", length = 300)
+    private String descricao;
 
     // Relacionamento
 
-    @OneToMany(mappedBy = "insights")
+    @OneToMany(mappedBy = "insight")
     private List<Contrato> contrato = new ArrayList<>();
 
-   public Insiht(String tipo, String descricao){
+   public Insight(String tipo, String descricao){
         this.tipo = tipo;
-        this.descricao = descriacao;
+        this.descricao = descricao;
     }
 
     public Long getIdLong(){
-        return idInsight;
+        return idinsight;
     }
 
     public void setIdConsultor(Long idInsight){
-        this.idInsight = idInsight;
+        this.idinsight = idInsight;
     }
 
     public String getTipo(){
@@ -55,11 +56,11 @@ public class Insihts {
     }
 
     public String getDescricao(){
-        return descriacao;
+        return descricao;
     }
 
     public void setDescricao(String tipo){
-        this.descriacao = descriacao;
+        this.descricao = descricao;
     }
 
     public List<Contrato> getContrato(){
