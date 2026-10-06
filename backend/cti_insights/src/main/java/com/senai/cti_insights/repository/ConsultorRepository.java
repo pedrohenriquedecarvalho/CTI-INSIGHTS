@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.senai.cti_insights.models.Consultor;
-import java.util.List;
+
 
 
 // interface é uma especie de contrato , o metodo implementado nela sera herdado para outra classe

@@ -1,6 +1,6 @@
 package com.senai.cti_insights.service;
 
-import org.springframework.stereotype.Service;
+
 
 import com.senai.cti_insights.models.Cliente;
 import com.senai.cti_insights.models.Consultor;

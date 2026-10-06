@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.senai.cti_insights.models.Cliente;
 
-public interface ClienteRepository extends JpaRepository<Cliente,Long> {
-    
+// Interface que permite manipular a tabela cliente no banco de dados
+public interface ClienteRepository extends JpaRepository<Cliente, Long> {
+
 }
