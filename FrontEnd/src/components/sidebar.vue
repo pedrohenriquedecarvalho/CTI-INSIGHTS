@@ -1,11 +1,14 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
 
 // Itens do menu — ajuste os "to" para os paths reais das suas rotas
+// somenteAdmin: true = o item só aparece para quem tem perfil ADMIN
 const menuItems = [
   {
     label: 'Dashboard',
@@ -13,9 +16,10 @@ const menuItems = [
     icon: 'M3 13h4v8H3v-8zm7-6h4v14h-4V7zm7 3h4v11h-4V10z',
   },
   {
-    label: 'Clientes',
-    to: '/clientes',
+    label: 'Usuários',
+    to: '/usuario',
     icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
+    somenteAdmin: true,
   },
   {
     label: 'Relatórios',
@@ -29,6 +33,11 @@ const menuItems = [
   },
 ]
 
+// Esconde os itens de admin para os demais usuários
+const itensVisiveis = computed(() =>
+  menuItems.filter((item) => !item.somenteAdmin || auth.ehAdmin)
+)
+
 // Controle do menu em telas menores (mobile)
 const mobileOpen = ref(false)
 
@@ -40,7 +49,7 @@ function isActivo(path) {
 }
 
 function sair() {
-  // Ponto certo para limpar sessão/token antes de voltar ao login
+  auth.logout() // Limpa token, perfil e nome
   router.push('/login')
 }
 </script>
@@ -109,7 +118,7 @@ function sair() {
       <!-- Itens do menu -->
       <nav class="space-y-1">
         <router-link
-          v-for="item in menuItems"
+          v-for="item in itensVisiveis"
           :key="item.to"
           :to="item.to"
           @click="mobileOpen = false"
