@@ -15,7 +15,6 @@ const routes = [
   { path: '/relatorios', name: 'relatorios', component: relatorios },
   { path: '/dashboard', name: 'dashboard', component: dashboard },
   { path: '/cadastro', name: 'cadastro', component: Cadastro },
-  
 
   // Só ADMIN abre esta tela (o backend também precisa conferir, o guard só esconde a página)
   { path: '/usuario', name: 'usuario', component: usuario, meta: { requiresAdmin: true } }

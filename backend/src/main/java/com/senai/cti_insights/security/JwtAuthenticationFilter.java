@@ -17,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
     private final JwtService jwt;
     private final UsuarioRepository repository;
 
@@ -26,24 +27,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
+
         String cabecalho = request.getHeader("Authorization");
+
         if (cabecalho != null && cabecalho.startsWith("Bearer ")) {
             String token = cabecalho.substring(7);
             try {
-                String email = jwt.extrairEmailValidado(token); // Verifica assinatura e expiração.
+                // Verifica assinatura e expiração.
+                String email = jwt.extrairEmailValidado(token);
                 Usuario usuario = repository.findByEmailIgnoreCase(email).orElse(null);
-                if (usuario != null) {
-                    var autoridades = List.of(new SimpleGrantedAuthority("ROLE_" + usuario.getPerfil().name()));
+
+                if (usuario != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    var autoridades = List.of(
+                            new SimpleGrantedAuthority("ROLE_" + usuario.getPerfil().name()));
                     var autenticacao = new UsernamePasswordAuthenticationToken(email, null, autoridades);
                     SecurityContextHolder.getContext().setAuthentication(autenticacao);
                 }
             } catch (JwtException | IllegalArgumentException ex) {
-                // Token inválido: não autentica; SecurityConfig devolverá 401 nas rotas privadas.
+                // Token inválido: não autentica; o SecurityConfig devolve 401 nas rotas privadas.
                 SecurityContextHolder.clearContext();
             }
         }
+
         chain.doFilter(request, response);
     }
 }
