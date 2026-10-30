@@ -1,18 +1,15 @@
-<!-- src/views/CadastroView.vue -->
+
 <template>
   <main class="min-h-screen bg-[#070a17] text-white flex flex-col justify-between p-6 lg:p-12">
 
-    <!-- Header com a Logo no topo alinhada ao container -->
     <header class="w-full max-w-6xl mx-auto">
       <div class="font-bold text-lg tracking-tight">
         CTI <span class="text-indigo-400 font-normal">Insights</span>
       </div>
     </header>
 
-    <!-- Conteúdo centralizado (Hero + Form) -->
     <div class="w-full max-w-6xl mx-auto my-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center py-8">
 
-      <!-- Seção de Apresentação -->
       <section class="space-y-6 max-w-lg">
         <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight tracking-tight text-white">
           Peça seu acesso e comece a ler seus dados.
@@ -24,7 +21,6 @@
         </p>
       </section>
 
-      <!-- Seção do Formulário -->
       <section class="w-full max-w-md mx-auto lg:max-w-none space-y-6">
         <div>
           <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
@@ -37,6 +33,7 @@
         </div>
 
         <form @submit.prevent="cadastrar" class="space-y-5">
+
           <div class="space-y-2">
             <label for="nome" class="block text-xs font-medium text-slate-300">Nome</label>
             <input
@@ -45,6 +42,7 @@
               type="text"
               placeholder="Seu nome completo"
               autocomplete="name"
+              maxlength="120"
               required
               class="w-full px-4 py-3 bg-[#0e1226] border border-indigo-500/10 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
             >
@@ -58,6 +56,7 @@
               type="email"
               placeholder="voce@empresa.com"
               autocomplete="email"
+              maxlength="160"
               required
               class="w-full px-4 py-3 bg-[#0e1226] border border-indigo-500/10 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
             >
@@ -69,11 +68,30 @@
               id="senha"
               v-model="senha"
               type="password"
-              placeholder="*********"
+              placeholder="Mín. 8 caracteres, com letras e números"
               autocomplete="new-password"
               required
               class="w-full px-4 py-3 bg-[#0e1226] border border-indigo-500/10 rounded-lg text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
             >
+          </div>
+
+          <!-- Seleção de perfil -->
+          <div class="space-y-2">
+            <label class="block text-xs font-medium text-slate-300">
+              Tipo de conta
+            </label>
+
+            <select
+              v-model="perfilSelecionado"
+              class="w-full px-4 py-3 bg-[#0e1226] border border-indigo-500/10 rounded-lg text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+            >
+              <option value="USER">USER - Usuário comum</option>
+              <option value="ADMIN">ADMIN - Administrador</option>
+            </select>
+
+            <p class="text-xs text-slate-500">
+              A criação de contas ADMIN depende de autorização do administrador do sistema.
+            </p>
           </div>
 
           <button
@@ -84,7 +102,6 @@
             {{ enviando ? 'Enviando...' : 'Enviar solicitação' }}
           </button>
 
-          <!-- Resultado do envio: sucesso (aguardando aprovação) ou erro -->
           <p
             v-if="mensagem"
             :role="sucesso ? 'status' : 'alert'"
@@ -107,44 +124,70 @@
 
     </div>
 
-    <!-- Div vazia para ajudar no alinhamento vertical flex-col (justify-between) -->
     <div class="hidden lg:block"></div>
   </main>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-
+import api from '../Service/api'
 
 const nome = ref('')
 const email = ref('')
 const senha = ref('')
+const perfilSelecionado = ref('USER')
 const mensagem = ref('')
-const sucesso = ref(false)   // Define a cor da mensagem (verde = enviado, vermelho = erro)
-const enviando = ref(false)  // Evita enviar a solicitação duas vezes
+const sucesso = ref(false)
+const enviando = ref(false)
 
-// Envia a solicitação de acesso. A conta só passa a valer depois que o administrador aprovar.
+const REGEX_SENHA = /^(?=.*[A-Za-z])(?=.*\d).{8,72}$/
+
 async function cadastrar() {
   mensagem.value = ''
+
+  if (!REGEX_SENHA.test(senha.value)) {
+    sucesso.value = false
+    mensagem.value = 'Use de 8 a 72 caracteres, com letras e números.'
+    return
+  }
+
   enviando.value = true
 
   try {
-    await api.post('/auth/register', {
+    await api.post('/api/auth/cadastro', {
       nome: nome.value,
       email: email.value,
-      senha: senha.value
+      senha: senha.value,
+
+      // Cadastro público sempre solicita perfil USER.
+      // O backend também deve impor essa regra.
+      perfil: 'USER'
     })
 
     sucesso.value = true
     mensagem.value = 'Solicitação enviada. Aguarde a aprovação do administrador.'
 
-    // Limpa os campos depois do envio
     nome.value = ''
     email.value = ''
     senha.value = ''
+    perfilSelecionado.value = 'USER'
+
   } catch (e) {
+    console.error(e)
     sucesso.value = false
-    mensagem.value = e.response?.data?.message || 'Não foi possível cadastrar.'
+
+    const status = e.response?.status
+
+    if (!e.response) {
+      mensagem.value = 'Não foi possível conectar ao servidor.'
+    } else if (status === 409) {
+      mensagem.value = 'Este e-mail já está cadastrado.'
+    } else if (status === 400) {
+      mensagem.value = e.response.data?.message || 'Dados inválidos. Confira nome, e-mail e senha.'
+    } else {
+      mensagem.value = e.response.data?.message || `Erro ${status} ao cadastrar.`
+    }
+
   } finally {
     enviando.value = false
   }

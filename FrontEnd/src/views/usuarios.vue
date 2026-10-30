@@ -1,192 +1,285 @@
-<!-- src/views/UsuariosView.vue -->
+
 <template>
-  <main class="min-h-screen bg-[#070a17] text-white p-6 lg:p-12">
-    <div class="w-full max-w-6xl mx-auto space-y-8">
+  <div class="min-h-screen bg-[#070a17] text-white flex">
 
-      <!-- Header com a Logo e o link de volta -->
-      <header class="flex items-center justify-between">
-        <div class="font-bold text-lg tracking-tight">
-          CTI <span class="text-indigo-400 font-normal">Insights</span>
-        </div>
+    <!-- Sidebar -->
+    <Sidebar />
 
-        <RouterLink to="/dashboard" class="text-slate-400 hover:text-white text-sm transition-colors">
-          Voltar ao dashboard
-        </RouterLink>
-      </header>
+    <!-- Conteúdo principal -->
+    <main class="flex-1 min-w-0 p-6 lg:p-10">
 
-      <!-- Título -->
-      <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-        <div>
-          <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Usuários
+      <div class="max-w-6xl mx-auto">
+
+        <!-- Cabeçalho -->
+        <header class="mb-10">
+          <h1 class="text-3xl font-bold">
+            Gerenciamento de usuários
           </h1>
 
-          <p class="text-slate-400 text-sm mt-1">
-            Aprove ou bloqueie os acessos solicitados no cadastro.
+          <p class="text-slate-400 mt-2">
+            Gerencie as solicitações de acesso ao CTI Insights.
           </p>
-        </div>
+        </header>
 
-        <button
-          type="button"
-          @click="atualizarLista"
-          :disabled="carregando"
-          class="self-start sm:self-auto py-2 px-4 bg-[#0e1226] border border-indigo-500/10 hover:border-indigo-500 text-slate-200 text-sm rounded-lg transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {{ carregando ? 'Atualizando...' : 'Atualizar lista' }}
-        </button>
-      </section>
+        <!-- Resumo -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
 
-      <!-- Mensagem de erro ou de confirmação da última ação -->
-      <p
-        v-if="mensagem"
-        :role="erro ? 'alert' : 'status'"
-        class="text-sm rounded-lg px-4 py-3 border"
-        :class="erro
-          ? 'text-red-300 bg-red-500/10 border-red-500/20'
-          : 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20'"
-      >
-        {{ mensagem }}
-      </p>
+          <div class="bg-[#0e1226] border border-slate-800 rounded-xl p-5">
+            <p class="text-slate-400 text-sm">
+              Usuários pendentes
+            </p>
 
-      <!-- Tabela de usuários -->
-      <section class="bg-[#0e1226] border border-indigo-500/10 rounded-lg overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm text-left">
-            <caption class="sr-only">Usuários cadastrados e situação do acesso</caption>
+            <p class="text-3xl font-bold mt-2">
+              {{ usuarios.length }}
+            </p>
+          </div>
 
-            <thead class="text-xs font-medium text-slate-400 border-b border-indigo-500/10">
-              <tr>
-                <th scope="col" class="px-4 py-3">Nome</th>
-                <th scope="col" class="px-4 py-3">E-mail</th>
-                <th scope="col" class="px-4 py-3">Status</th>
-                <th scope="col" class="px-4 py-3 text-right">Ações</th>
-              </tr>
-            </thead>
+          <div class="bg-[#0e1226] border border-slate-800 rounded-xl p-5">
+            <p class="text-slate-400 text-sm">
+              Solicitações carregadas
+            </p>
 
-            <tbody>
-              <tr
-                v-for="u in usuarios"
-                :key="u.id"
-                class="border-b border-indigo-500/10 last:border-b-0"
-              >
-                <td class="px-4 py-3 text-white whitespace-nowrap">{{ u.nome }}</td>
-                <td class="px-4 py-3 text-slate-300 whitespace-nowrap">{{ u.email }}</td>
+            <p class="text-3xl font-bold mt-2">
+              {{ usuarios.length }}
+            </p>
+          </div>
 
-                <td class="px-4 py-3">
-                  <span
-                    class="inline-block px-2.5 py-1 rounded-full text-xs font-medium border"
-                    :class="classeStatus(u.status)"
-                  >
-                    {{ u.status }}
-                  </span>
-                </td>
+        </section>
 
-                <td class="px-4 py-3">
-                  <div class="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      @click="ativar(u.id)"
-                      :disabled="processandoId === u.id || u.status === 'ATIVO'"
-                      :aria-label="'Ativar ' + u.nome"
-                      class="py-1.5 px-3 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      Ativar
-                    </button>
+        <!-- Tabela -->
+        <section class="bg-[#0e1226] border border-slate-800 rounded-xl p-6">
 
-                    <button
-                      type="button"
-                      @click="bloquear(u.id)"
-                      :disabled="processandoId === u.id || u.status === 'BLOQUEADO'"
-                      :aria-label="'Bloquear ' + u.nome"
-                      class="py-1.5 px-3 border border-red-500/30 text-red-300 hover:bg-red-500/10 text-xs font-medium rounded-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      Bloquear
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+          <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
 
-        <!-- Estados vazios: carregando ou nenhum cadastro -->
-        <p v-if="carregando && !usuarios.length" class="px-4 py-8 text-center text-slate-400 text-sm">
-          Carregando usuários...
-        </p>
+            <div>
+              <h2 class="text-xl font-semibold">
+                Solicitações de acesso
+              </h2>
 
-        <p v-else-if="!usuarios.length && !erro" class="px-4 py-8 text-center text-slate-400 text-sm">
-          Nenhum cadastro por enquanto. Quando alguém solicitar acesso, aparece aqui.
-        </p>
-      </section>
+              <p class="text-sm text-slate-400 mt-1">
+                Aprove ou rejeite os novos cadastros.
+              </p>
+            </div>
 
-    </div>
-  </main>
+            <button
+              @click="buscarUsuarios"
+              :disabled="carregando"
+              class="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 px-4 py-2 rounded-lg transition"
+            >
+              {{ carregando ? 'Atualizando...' : 'Atualizar lista' }}
+            </button>
+
+          </div>
+
+          <!-- Carregando -->
+          <div v-if="carregando" class="text-center py-10 text-slate-400">
+            Carregando usuários...
+          </div>
+
+          <!-- Erro -->
+          <div
+            v-else-if="mensagemErro"
+            class="bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg p-4"
+          >
+            {{ mensagemErro }}
+          </div>
+
+          <!-- Lista vazia -->
+          <div
+            v-else-if="usuarios.length === 0"
+            class="text-center py-10 text-slate-400"
+          >
+            Nenhuma solicitação pendente.
+          </div>
+
+          <!-- Lista de usuários -->
+          <div v-else class="overflow-x-auto">
+
+            <table class="w-full text-left">
+
+              <thead>
+                <tr class="border-b border-slate-700 text-slate-400 text-sm">
+                  <th class="p-4">ID</th>
+                  <th class="p-4">Nome</th>
+                  <th class="p-4">E-mail</th>
+                  <th class="p-4">Status</th>
+                  <th class="p-4 text-center">Ações</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr
+                  v-for="usuario in usuarios"
+                  :key="usuario.id"
+                  class="border-b border-slate-800 hover:bg-white/5 transition"
+                >
+
+                  <td class="p-4">
+                    {{ usuario.id }}
+                  </td>
+
+                  <td class="p-4 font-medium">
+                    {{ usuario.nome }}
+                  </td>
+
+                  <td class="p-4 text-slate-300">
+                    {{ usuario.email }}
+                  </td>
+
+                  <td class="p-4">
+                    <span class="bg-yellow-500/10 text-yellow-400 px-3 py-1 rounded-full text-xs">
+                      Pendente
+                    </span>
+                  </td>
+
+                  <td class="p-4">
+                    <div class="flex justify-center gap-2">
+
+                      <button
+                        @click="aprovarUsuario(usuario)"
+                        :disabled="processando === usuario.id"
+                        class="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-3 py-2 rounded-lg text-sm transition"
+                      >
+                        Aprovar
+                      </button>
+
+                      <button
+                        @click="rejeitarUsuario(usuario)"
+                        :disabled="processando === usuario.id"
+                        class="bg-red-600 hover:bg-red-500 disabled:opacity-50 px-3 py-2 rounded-lg text-sm transition"
+                      >
+                        Rejeitar
+                      </button>
+
+                    </div>
+                  </td>
+
+                </tr>
+              </tbody>
+
+            </table>
+
+          </div>
+
+          <!-- Mensagens -->
+          <div
+            v-if="mensagemSucesso"
+            class="mt-5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-lg"
+          >
+            {{ mensagemSucesso }}
+          </div>
+
+        </section>
+
+      </div>
+
+    </main>
+  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-
+import { ref, onMounted } from 'vue'
+import api from '../Service/api.js'
+import Sidebar from '../components/sidebar.vue'
 
 const usuarios = ref([])
 const carregando = ref(false)
-const processandoId = ref(null) // Id do usuário que está sendo alterado (trava os botões da linha)
-const mensagem = ref('')
-const erro = ref(false)
+const processando = ref(null)
 
-// Cor do status: verde = ativo, vermelho = bloqueado, amarelo = qualquer outro (ex.: aguardando aprovação)
-function classeStatus(status) {
-  if (status === 'ATIVO') return 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20'
-  if (status === 'BLOQUEADO') return 'text-red-300 bg-red-500/10 border-red-500/20'
-  return 'text-amber-300 bg-amber-500/10 border-amber-500/20'
-}
+const mensagemErro = ref('')
+const mensagemSucesso = ref('')
 
-function mostrarErro(e, padrao) {
-  erro.value = true
-  mensagem.value = e.response?.data?.message || padrao
-}
-
-async function carregar() {
+// Buscar usuários pendentes
+async function buscarUsuarios() {
   carregando.value = true
+  mensagemErro.value = ''
+
   try {
-    const { data } = await api.get('/admin/usuarios') // Busca usuários cadastrados
-    usuarios.value = Array.isArray(data) ? data : []
-  } catch (e) {
-    mostrarErro(e, 'Não foi possível carregar os usuários.')
+    const resposta = await api.get('/api/admin/usuarios/pendentes')
+
+    usuarios.value = resposta.data
+
+  } catch (erro) {
+    console.error('Erro ao buscar usuários:', erro)
+
+    mensagemErro.value =
+      erro.response?.data?.message ||
+      `Erro ${erro.response?.status || ''} ao carregar usuários.`
+
   } finally {
     carregando.value = false
   }
 }
 
-// Botão "Atualizar lista": limpa a mensagem anterior e busca de novo
-function atualizarLista() {
-  mensagem.value = ''
-  return carregar()
-}
+// Aprovar usuário
+async function aprovarUsuario(usuario) {
+  const confirmar = window.confirm(
+    `Deseja aprovar o cadastro de ${usuario.nome}?`
+  )
 
-// Envia o novo status para a API e atualiza a tabela. Quem autoriza de verdade é o backend
-async function alterarStatus(id, status, textoSucesso) {
-  mensagem.value = ''
-  processandoId.value = id
+  if (!confirmar) return
+
+  processando.value = usuario.id
+  mensagemErro.value = ''
+  mensagemSucesso.value = ''
 
   try {
-    await api.patch('/admin/usuarios/' + id + '/status', { status })
-    erro.value = false
-    mensagem.value = textoSucesso
-    await carregar() // Atualiza a tabela
-  } catch (e) {
-    mostrarErro(e, 'Não foi possível alterar o status do usuário.')
+    await api.patch(
+      `/api/admin/usuarios/${usuario.id}/aprovar`
+    )
+
+    mensagemSucesso.value =
+      `Usuário ${usuario.nome} aprovado com sucesso!`
+
+    await buscarUsuarios()
+
+  } catch (erro) {
+    console.error('Erro ao aprovar usuário:', erro)
+
+    mensagemErro.value =
+      erro.response?.data?.message ||
+      `Não foi possível aprovar o usuário. Erro ${erro.response?.status || ''}.`
+
   } finally {
-    processandoId.value = null
+    processando.value = null
   }
 }
 
-function ativar(id) {
-  return alterarStatus(id, 'ATIVO', 'Usuário ativado.')
+// Rejeitar usuário
+async function rejeitarUsuario(usuario) {
+  const confirmar = window.confirm(
+    `Deseja realmente rejeitar o cadastro de ${usuario.nome}?`
+  )
+
+  if (!confirmar) return
+
+  processando.value = usuario.id
+  mensagemErro.value = ''
+  mensagemSucesso.value = ''
+
+  try {
+    await api.patch(
+      `/api/admin/usuarios/${usuario.id}/rejeitar`
+    )
+
+    mensagemSucesso.value =
+      `Cadastro de ${usuario.nome} rejeitado.`
+
+    await buscarUsuarios()
+
+  } catch (erro) {
+    console.error('Erro ao rejeitar usuário:', erro)
+
+    mensagemErro.value =
+      erro.response?.data?.message ||
+      `Não foi possível rejeitar o usuário. Erro ${erro.response?.status || ''}.`
+
+  } finally {
+    processando.value = null
+  }
 }
 
-function bloquear(id) {
-  return alterarStatus(id, 'BLOQUEADO', 'Usuário bloqueado.')
-}
-
-onMounted(carregar)
+onMounted(() => {
+  buscarUsuarios()
+})
 </script>

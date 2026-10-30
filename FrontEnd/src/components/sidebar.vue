@@ -1,3 +1,4 @@
+
 <script setup>
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -7,8 +8,6 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 
-// Itens do menu — ajuste os "to" para os paths reais das suas rotas
-// somenteAdmin: true = o item só aparece para quem tem perfil ADMIN
 const menuItems = [
   {
     label: 'Dashboard',
@@ -17,7 +16,7 @@ const menuItems = [
   },
   {
     label: 'Usuários',
-    to: '/usuario',
+    to: '/usuarios',
     icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
     somenteAdmin: true,
   },
@@ -33,15 +32,23 @@ const menuItems = [
   },
 ]
 
-// Esconde os itens de admin para os demais usuários
 const itensVisiveis = computed(() =>
   menuItems.filter((item) => !item.somenteAdmin || auth.ehAdmin)
 )
 
-// Controle do menu em telas menores (mobile)
-const mobileOpen = ref(false)
+const nomeUsuario = computed(() =>
+  auth.nome || auth.usuario?.nome || auth.usuario?.name || 'Usuário'
+)
 
-// Controle de recolher/expandir no desktop
+const emailUsuario = computed(() =>
+  auth.email || auth.usuario?.email || ''
+)
+
+const inicial = computed(() =>
+  nomeUsuario.value.trim().charAt(0).toUpperCase() || 'U'
+)
+
+const mobileOpen = ref(false)
 const collapsed = ref(false)
 
 function isActivo(path) {
@@ -49,23 +56,27 @@ function isActivo(path) {
 }
 
 function sair() {
-  auth.logout() // Limpa token, perfil e nome
+  auth.logout()
   router.push('/login')
 }
 </script>
 
 <template>
-  <!-- Botão hambúrguer (mobile) -->
   <button
     @click="mobileOpen = !mobileOpen"
     class="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-[#0e1226] border border-indigo-500/10 text-slate-300"
+    aria-label="Abrir menu"
   >
     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M4 6h16M4 12h16M4 18h16"
+      />
     </svg>
   </button>
 
-  <!-- Overlay mobile -->
   <Transition
     enter-active-class="transition-opacity duration-200"
     enter-from-class="opacity-0"
@@ -81,7 +92,6 @@ function sair() {
     ></div>
   </Transition>
 
-  <!-- Sidebar -->
   <aside
     class="fixed md:sticky top-0 left-0 h-screen bg-[#0b0e20] border-r border-indigo-500/10 flex flex-col justify-between p-4 z-40 transition-all duration-300"
     :class="[
@@ -90,17 +100,19 @@ function sair() {
     ]"
   >
     <div>
-      <!-- Logo + botão de recolher -->
       <div class="flex items-center justify-between px-2 mb-8">
-        <div class="font-bold text-lg tracking-tight overflow-hidden whitespace-nowrap" :class="collapsed && 'md:hidden'">
+        <div
+          class="font-bold text-lg tracking-tight overflow-hidden whitespace-nowrap"
+          :class="collapsed && 'md:hidden'"
+        >
           CTI <span class="text-indigo-400 font-normal">Insights</span>
         </div>
 
-        <!-- Botão recolher (só aparece no desktop) -->
         <button
           @click="collapsed = !collapsed"
           class="hidden md:flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors duration-200 shrink-0"
           :title="collapsed ? 'Expandir menu' : 'Recolher menu'"
+          aria-label="Recolher ou expandir menu"
         >
           <svg
             class="w-4 h-4 transition-transform duration-300"
@@ -110,12 +122,15 @@ function sair() {
             stroke="currentColor"
             stroke-width="2"
           >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
         </button>
       </div>
 
-      <!-- Itens do menu -->
       <nav class="space-y-1">
         <router-link
           v-for="item in itensVisiveis"
@@ -131,23 +146,49 @@ function sair() {
           ]"
           :title="collapsed ? item.label : undefined"
         >
-          <svg class="w-4.5 h-4.5 shrink-0" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" :d="item.icon" />
+          <svg
+            class="w-[18px] h-[18px] shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              :d="item.icon"
+            />
           </svg>
-          <span :class="collapsed && 'md:hidden'">{{ item.label }}</span>
+
+          <span :class="collapsed && 'md:hidden'">
+            {{ item.label }}
+          </span>
         </router-link>
       </nav>
     </div>
 
-    <!-- Rodapé: usuário + logout -->
     <div class="border-t border-indigo-500/10 pt-4 px-2">
-      <div class="flex items-center gap-3 mb-3" :class="collapsed && 'md:justify-center'">
-        <div class="w-8 h-8 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-xs font-semibold text-indigo-300 shrink-0">
-          A
+      <div
+        class="flex items-center gap-3 mb-3"
+        :class="collapsed && 'md:justify-center'"
+      >
+        <div
+          class="w-8 h-8 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-xs font-semibold text-indigo-300 shrink-0"
+        >
+          {{ inicial }}
         </div>
+
         <div class="min-w-0" :class="collapsed && 'md:hidden'">
-          <p class="text-sm font-medium text-white truncate">Admin</p>
-          <p class="text-xs text-slate-500 truncate">admin@cti.com</p>
+          <p class="text-sm font-medium text-white truncate">
+            {{ nomeUsuario }}
+          </p>
+
+          <p
+            v-if="emailUsuario"
+            class="text-xs text-slate-500 truncate"
+          >
+            {{ emailUsuario }}
+          </p>
         </div>
       </div>
 
@@ -157,9 +198,20 @@ function sair() {
         :class="collapsed && 'md:justify-center'"
         :title="collapsed ? 'Sair' : undefined"
       >
-        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v1" />
+        <svg
+          class="w-4 h-4 shrink-0"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v1"
+          />
         </svg>
+
         <span :class="collapsed && 'md:hidden'">Sair</span>
       </button>
     </div>
